@@ -15,7 +15,7 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.yourcompany.chronos",
+      "bundleIdentifier": "com.fortega.chronos",
       "buildNumber": "1",
       "infoPlist": {
         "NSUserTrackingUsageDescription": "This identifier will be used to deliver personalized ads to you.",
@@ -26,7 +26,7 @@
       }
     },
     "android": {
-      "package": "com.yourcompany.chronos",
+      "package": "com.fortega.chronos",
       "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
@@ -48,8 +48,8 @@
       [
         "react-native-google-mobile-ads",
         {
-          "androidAppId": "ca-app-pub-xxxxxxxxxxxxxxxx~xxxxxxxxxx",
-          "iosAppId": "ca-app-pub-xxxxxxxxxxxxxxxx~xxxxxxxxxx"
+          "androidAppId": "ca-app-pub-1641079109955333~2258054409",
+          "iosAppId": "ca-app-pub-1641079109955333~2258054409"
         }
       ],
       [
