@@ -1,0 +1,13 @@
+name = "chronos-api"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+# Non-secret variables (fine to commit)
+STORY_MODEL = "gemini-2.0-flash"
+IMAGE_MODEL = "gemini-2.0-flash-preview-image-generation"
+TTS_MODEL = "gemini-2.5-flash-preview-tts"
+
+# Secret variables — set via: wrangler secret put GEMINI_API_KEY
+# GEMINI_API_KEY is injected at runtime and NEVER stored in this file
