@@ -57,7 +57,13 @@
         {
           "ios": {
             "deploymentTarget": "15.1",
-            "useFrameworks": "static"
+            "useFrameworks": "static",
+            "extraPods": [
+              {
+                "name": "ExpoModulesCore",
+                "modular_headers": true
+              }
+            ]
           },
           "android": {
             "compileSdkVersion": 35,

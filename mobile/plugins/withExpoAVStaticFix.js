@@ -1,14 +1,18 @@
 /**
- * Config plugin to fix expo-av (EXAV) header resolution when
+ * Config plugin to fix expo-av (EXAV) compilation when
  * useFrameworks: "static" is enabled (required by react-native-google-mobile-ads).
  *
  * Root cause: with static frameworks, CocoaPods does not automatically
- * expose ExpoModulesCore public headers to the EXAV pod, causing:
- *   - 'ExpoModulesCore/EXEventEmitter.h' file not found
- *   - could not build Objective-C module 'EXAV'
+ * build ExpoModulesCore with modular headers, so EXAV cannot resolve:
+ *   #import <ExpoModulesCore/EXEventEmitter.h>
  *
- * Fix: inject a post_install step that appends the ExpoModulesCore
- * public headers path to EXAV's HEADER_SEARCH_PATHS.
+ * Primary fix: expo-build-properties extraPods with modular_headers: true
+ *   (see app.json) — tells CocoaPods to emit a module map for the pod.
+ *
+ * This plugin is a belt-and-suspenders fallback: it sets DEFINES_MODULE=YES
+ * and SWIFT_INSTALL_OBJC_HEADER=YES on the ExpoModulesCore Xcode target via
+ * a post_install hook, which makes Xcode generate the umbrella header and
+ * module map at build time regardless of CocoaPods configuration.
  */
 const { withDangerousMod } = require('@expo/config-plugins');
 const path = require('path');
@@ -17,18 +21,12 @@ const fs = require('fs');
 const GUARD = '# [withExpoAVStaticFix]';
 
 const PATCH = `
-  ${GUARD} Fix EXAV header search paths when useFrameworks: static is active
+  ${GUARD} Ensure ExpoModulesCore emits a module map so EXAV can resolve its headers
   installer.pods_project.targets.each do |target|
-    if target.name == 'EXAV'
+    if target.name == 'ExpoModulesCore'
       target.build_configurations.each do |cfg|
-        existing = cfg.build_settings['HEADER_SEARCH_PATHS'] || '$(inherited)'
-        unless existing.include?('ExpoModulesCore')
-          cfg.build_settings['HEADER_SEARCH_PATHS'] = [
-            existing,
-            '"${PODS_ROOT}/Headers/Public/ExpoModulesCore"',
-            '"${PODS_CONFIGURATION_BUILD_DIR}/ExpoModulesCore/Swift Compatibility Header"',
-          ].join(' ')
-        end
+        cfg.build_settings['DEFINES_MODULE'] = 'YES'
+        cfg.build_settings['SWIFT_INSTALL_OBJC_HEADER'] = 'YES'
       end
     end
   end
@@ -42,11 +40,9 @@ const withExpoAVStaticFix = (config) =>
       let podfile = fs.readFileSync(podfilePath, 'utf8');
 
       if (podfile.includes(GUARD)) {
-        // Already patched – nothing to do.
         return cfg;
       }
 
-      // Insert the patch inside the existing post_install block.
       podfile = podfile.replace(
         /(post_install do \|installer\|)/,
         `$1\n${PATCH}`
