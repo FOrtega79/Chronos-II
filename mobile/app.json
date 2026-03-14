@@ -65,7 +65,8 @@
             "minSdkVersion": 24
           }
         }
-      ]
+      ],
+      "./plugins/withExpoAVStaticFix"
     ],
     "experiments": {
       "typedRoutes": true
