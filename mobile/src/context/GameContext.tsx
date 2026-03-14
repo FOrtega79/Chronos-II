@@ -3,7 +3,7 @@
  *
  * Adaptations vs the web version:
  * - localStorage → AsyncStorage
- * - Web AudioContext → expo-av (Audio.Sound)
+ * - Web AudioContext → expo-audio (AudioPlayer)
  * - Writes TTS audio to a temp file via expo-file-system for reliable playback
  */
 import React, {
@@ -15,7 +15,7 @@ import React, {
   useCallback,
 } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Audio } from 'expo-av';
+import { AudioPlayer, createAudioPlayer, setAudioModeAsync } from 'expo-audio';
 import * as FileSystem from 'expo-file-system';
 import { GameState, StoryBeat, AppStatus, StoryTheme, SaveData } from '../types';
 import {
@@ -66,7 +66,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [isAudioLoading, setIsAudioLoading] = useState(false);
 
-  const soundRef = useRef<Audio.Sound | null>(null);
+  const soundRef = useRef<AudioPlayer | null>(null);
   const tempAudioUriRef = useRef<string | null>(null);
 
   // ── Init ────────────────────────────────────────────────────────────────────
@@ -80,7 +80,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (narrationRaw !== null) setIsNarrationEnabled(JSON.parse(narrationRaw));
 
       // Configure audio session for background/speaker playback
-      await Audio.setAudioModeAsync({
+      await setAudioModeAsync({
         allowsRecordingIOS: false,
         staysActiveInBackground: false,
         playsInSilentModeIOS: true,
@@ -113,8 +113,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const stopAudio = useCallback(async () => {
     if (soundRef.current) {
       try {
-        await soundRef.current.stopAsync();
-        await soundRef.current.unloadAsync();
+        soundRef.current.remove();
       } catch {
         /* ignore */
       }
@@ -147,15 +146,13 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       tempAudioUriRef.current = tempUri;
 
-      const { sound } = await Audio.Sound.createAsync(
-        { uri: tempUri },
-        { shouldPlay: true, volume: 1.0 }
-      );
-      soundRef.current = sound;
+      const player = createAudioPlayer({ uri: tempUri });
+      soundRef.current = player;
+      player.play();
       setIsPlayingAudio(true);
 
-      sound.setOnPlaybackStatusUpdate((status) => {
-        if (status.isLoaded && status.didJustFinish) {
+      player.addListener('playbackStatusUpdate', (status) => {
+        if (status.didJustFinish) {
           setIsPlayingAudio(false);
         }
       });
