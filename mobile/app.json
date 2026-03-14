@@ -40,12 +40,6 @@
       "expo-router",
       "expo-font",
       [
-        "expo-av",
-        {
-          "microphonePermission": false
-        }
-      ],
-      [
         "react-native-google-mobile-ads",
         {
           "androidAppId": "ca-app-pub-1641079109955333~2258054409",
@@ -57,13 +51,7 @@
         {
           "ios": {
             "deploymentTarget": "15.1",
-            "useFrameworks": "static",
-            "extraPods": [
-              {
-                "name": "ExpoModulesCore",
-                "modular_headers": true
-              }
-            ]
+            "useFrameworks": "static"
           },
           "android": {
             "compileSdkVersion": 35,
@@ -71,8 +59,7 @@
             "minSdkVersion": 24
           }
         }
-      ],
-      "./plugins/withExpoAVStaticFix"
+      ]
     ],
     "experiments": {
       "typedRoutes": true
