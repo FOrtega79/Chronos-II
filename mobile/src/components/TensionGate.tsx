@@ -6,7 +6,6 @@ import {
   StyleSheet,
   Animated,
 } from 'react-native';
-import { BlurView } from 'expo-blur';
 import { useMonetization } from '../context/MonetizationContext';
 
 interface Props {
